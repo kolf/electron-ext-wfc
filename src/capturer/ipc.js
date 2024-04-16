@@ -55,19 +55,16 @@ const startCapturingIpc = () => {
     const _invoke = ipcRenderer.invoke;
     const _invokeTo = ipcRenderer.invokeTo;
     ipcRenderer.send = (channel, ...args) => {
-      console.log(channel, args, 'ipc send');
       handleMessage(channel, args);
       _send.call(ipcRenderer, channel, ...args);
     };
 
     ipcRenderer.sendSync = (channel, ...args) => {
-      console.log(channel, args, 'ipc sendSync');
       const ret = _sendSync.call(ipcRenderer, channel, ...args);
       handleMessage(channel, args, ret);
       return ret;
     };
     ipcRenderer.invoke = (channel, ...args) => {
-      console.log(channel, args, 'ipc invoke');
       const ret = _invoke.call(ipcRenderer, channel, ...args);
       handleMessage(channel, args, ret);
       return ret;

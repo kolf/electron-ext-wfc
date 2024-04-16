@@ -72,11 +72,13 @@ export const getParsedMessage = (row, sendOrReceive) => {
   if (!row) return undefined;
   if (!row[sendOrReceive]) return undefined;
 
-  let parsed = JSON.parse(row[sendOrReceive]);
+  let parsed = JSON.parse(row[sendOrReceive]) || {};
   if (typeof parsed !== 'object') {
     parsed = {
       '': parseJSON(parsed),
     };
+  } else if (parsed.value) {
+    parsed.value = parseJSON(parsed.value);
   }
-  return parsed || {};
+  return parsed;
 };

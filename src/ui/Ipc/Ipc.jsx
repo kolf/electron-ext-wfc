@@ -18,8 +18,6 @@ const FilterContext = createContext(undefined);
 const Ipc = () => {
   const [capturing, setCapturing] = useState(false);
   const [messages, setMessages] = useState([]);
-  const [bottomRow, setBottomRow] = useState(-1);
-  const [autoScroll, setAutoScroll] = useState(false);
   const [filters, setFilters] = useState({
     channel: '',
     method: '',
@@ -41,14 +39,6 @@ const Ipc = () => {
     toggleCapturing();
   }, []);
 
-  // run if autoScroll or bottomRow changes
-  useEffect(() => {
-    gridRef.current && autoScroll && gridRef.current.scrollToRow(bottomRow);
-  }, [autoScroll, bottomRow]);
-
-  // it is not very elegent to use two variables to store same thing
-  // but can prevent unnecessary render that will disrupt users when
-  // they are selecting options from <select>
   if (channels.length !== channelsRef.current.size) {
     setChannels(Array.from(channelsRef.current));
   }
@@ -83,21 +73,7 @@ const Ipc = () => {
       .then((newRawMessages) => {
         let newMsgs = makeMessages(newRawMessages);
 
-        // since addMessages is called from setInterval, if we read messages
-        // directly we will always get an empty array. use setMessages to get
-        // the latest messages (oldMessages) instead.
         setMessages(newMsgs);
-
-        if (newMsgs.length > 0) {
-          // add to filter options set
-          newMsgs.forEach((msg) => {
-            msg.channel && channelsRef.current.add(msg.channel);
-            msg.method && methodsRef.current.add(msg.method);
-          });
-
-          // for auto scroll
-          setBottomRow((oldBottomRow) => oldBottomRow + newMsgs.length);
-        }
       })
       .catch((error) => {
         console.error(error.stack || error);
@@ -140,11 +116,6 @@ const Ipc = () => {
         });
     }
   };
-
-  const toggleAutoScroll = () => {
-    setAutoScroll(!autoScroll);
-  };
-
   // 切换排序方式
   const toggleReverseOrder = () => {
     setReverseOrder(!reverseOrder);
@@ -189,10 +160,6 @@ const Ipc = () => {
             <span className='toolbar-icon ipc-icon-top'></span>
             <span className='toolbar-text'>倒序</span>
           </button>
-          <button className={`ipc-toolbar-button ${autoScroll ? 'active' : ''}`} onClick={toggleAutoScroll}>
-            <span className='toolbar-icon ipc-icon-bottom'></span>
-            <span className='toolbar-text'>自动滚动</span>
-          </button>
           <button className={`ipc-toolbar-button ${filters.enabled ? 'active' : ''}`} onClick={toggleFilters}>
             <span className='toolbar-icon ipc-icon-filter'></span>
             <span className='toolbar-text'>过滤</span>
@@ -205,12 +172,15 @@ const Ipc = () => {
       </div>
       <ResizableTable>
         <FilterContext.Provider value={filters}>
+          {selectedRow?.id}
           <DataGrid
             className={`rdg-light ${filters.enabled ? 'filter-container' : undefined}`}
             style={{ height: 'calc(100vh - 30px)' }}
             ref={gridRef}
             columns={columns}
             rows={filteredRows}
+            // 给选中的行添加类名
+            rowClass={(row) => (selectedRow?.id === row.id ? 'rdg-row selected' : 'rdg-row')}
             rowKeyGetter={(row) => row.id}
             headerRowHeight={filters.enabled ? 52 : 25}
             rowHeight={20}
