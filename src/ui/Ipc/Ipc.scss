@@ -87,10 +87,11 @@
 }
 .rdg-row {
   &:hover {
-    background-color: #dee1e6;
+    background-color: #f7e4bd;
   }
   &.selected{
-    background-color: #b8d3ed;
+    background-color: #f38700;
+    color: #fff;
   }
 }
 

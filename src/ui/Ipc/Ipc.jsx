@@ -172,7 +172,6 @@ const Ipc = () => {
       </div>
       <ResizableTable>
         <FilterContext.Provider value={filters}>
-          {selectedRow?.id}
           <DataGrid
             className={`rdg-light ${filters.enabled ? 'filter-container' : undefined}`}
             style={{ height: 'calc(100vh - 30px)' }}
