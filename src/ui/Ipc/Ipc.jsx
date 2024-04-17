@@ -5,6 +5,7 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import JsonView from 'react-json-view';
 import NoMessageSelected from '../NoMessageSelected/NoMessageSelected';
 import { logger } from '../../utils/logger.js';
+import { copyText } from '../../utils/dom.js';
 import { generateColumns } from './rdgHelper';
 import { startCapturingIpc, stopCapturingIpc, getIpcMessages, clearIpcMessages } from '../../capturer/ipc';
 import { makeMessages, getParsedMessage, getMessageTypes } from './messageHelper';
@@ -116,6 +117,10 @@ const Ipc = () => {
     }));
   };
 
+  const handleCopy = ({ sourceRow, sourceColumnKey }) => {
+    copyText(sourceRow[sourceColumnKey]);
+  };
+
   const clearFilters = () => {
     setFilters({
       channel: '',
@@ -171,6 +176,7 @@ const Ipc = () => {
             rowKeyGetter={(row) => row.id}
             headerRowHeight={filters.enabled ? 52 : 25}
             rowHeight={20}
+            onCopy={handleCopy}
             onRowClick={(row) => {
               setSelectedRow(row);
             }}

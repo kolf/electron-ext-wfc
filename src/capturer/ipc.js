@@ -20,6 +20,7 @@ const startCapturingIpc = () => {
         time: new Date().toLocaleString().split(' ')[1],
       };
       const [firstArg, ...restArgs] = args;
+
       if (args.length === 1 && firstArg.methodName) {
         message = {
           ...message,
