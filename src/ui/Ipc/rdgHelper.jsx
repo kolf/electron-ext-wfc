@@ -1,12 +1,6 @@
 import React, { useContext } from 'react';
 import { useFocusRef } from '../useFocusRef';
 
-const inputStopPropagation = (event) => {
-  if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
-    event.stopPropagation();
-  }
-};
-
 const commonColumnProperties = {
   resizable: true,
 };
@@ -117,7 +111,6 @@ const generateColumns = (FilterContext, setFilters, channels, methods) => {
               onChange={(e) => {
                 setFilters({ ...filters, send: e.target.value });
               }}
-              onKeyDown={inputStopPropagation}
             />
           )}
         </FilterRenderer>
@@ -138,7 +131,6 @@ const generateColumns = (FilterContext, setFilters, channels, methods) => {
               onChange={(e) => {
                 setFilters({ ...filters, receive: e.target.value });
               }}
-              onKeyDown={inputStopPropagation}
             />
           )}
         </FilterRenderer>

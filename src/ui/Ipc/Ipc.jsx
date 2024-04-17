@@ -4,9 +4,10 @@ import DataGrid from 'react-data-grid';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import JsonView from 'react-json-view';
 import NoMessageSelected from '../NoMessageSelected/NoMessageSelected';
+import { logger } from '../../utils/logger.js';
 import { generateColumns } from './rdgHelper';
 import { startCapturingIpc, stopCapturingIpc, getIpcMessages, clearIpcMessages } from '../../capturer/ipc';
-import { makeMessages, getParsedMessage } from './messageHelper';
+import { makeMessages, getParsedMessage, getMessageTypes } from './messageHelper';
 
 import './Ipc.scss';
 import '../react-tabs.scss';
@@ -25,30 +26,22 @@ const Ipc = () => {
     receive: '',
     enabled: false,
   });
-  const [channels, setChannels] = useState([]); // all kinds of channels in messages
-  const [methods, setMethods] = useState([]); // all kinds of methods in messages
   const [selectedRow, setSelectedRow] = useState();
   // 是否倒序排列
   const [reverseOrder, setReverseOrder] = useState(false);
   const timer = useRef(null);
   const gridRef = useRef(null);
-  const channelsRef = useRef(new Set()); // we need ref to get old values in all renders
-  const methodsRef = useRef(new Set());
 
   useEffect(() => {
     toggleCapturing();
   }, []);
 
-  if (channels.length !== channelsRef.current.size) {
-    setChannels(Array.from(channelsRef.current));
-  }
-  if (methods.length !== methodsRef.current.size) {
-    setMethods(Array.from(methodsRef.current));
-  }
+  const channels = getMessageTypes(messages, 'channel');
+  const methods = getMessageTypes(messages, 'method');
 
   const columns = useMemo(() => {
     return generateColumns(FilterContext, setFilters, channels, methods);
-  }, [setFilters, channels, methods]);
+  }, [setFilters, channels.length, methods.length]);
 
   const filteredRows = useMemo(() => {
     const messageList = messages
@@ -83,11 +76,6 @@ const Ipc = () => {
   const clearMessages = () => {
     clearIpcMessages().then(() => {
       setMessages([]);
-      // should also clear filter options
-      setChannels([]);
-      setMethods([]);
-      channelsRef.current.clear();
-      methodsRef.current.clear();
       setSelectedRow(null);
     });
   };
