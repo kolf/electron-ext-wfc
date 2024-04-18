@@ -8,7 +8,16 @@ export const makeMessages = (messages) => {
 
 const parseJSON = (json) => {
   try {
-    return JSON.parse(json);
+    let obj = JSON.parse(json);
+    if (Array.isArray(obj)) {
+      obj = obj.map((item) => parseJSON(item));
+    } else {
+      Object.entries(obj).forEach(([key, value]) => {
+        obj[key] = parseJSON(value);
+      });
+    }
+
+    return obj;
   } catch (err) {
     return json;
   }
