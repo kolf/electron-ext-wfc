@@ -1,9 +1,20 @@
 export const makeMessages = (messages) => {
-  return messages.map((message) => ({
-    ...message,
-    send: message.args !== undefined ? JSON.stringify(message.args) : null,
-    receive: message.result !== undefined ? JSON.stringify(message.result) : null,
-  }));
+  console.log(messages, 'messages ipc');
+  return messages.reduce((result, message) => {
+    if (message.type === 'response') {
+      return result;
+    }
+    const item = {
+      ...message,
+      send: message.args !== undefined ? JSON.stringify(message.args) : null,
+      receive: message.result !== undefined ? JSON.stringify(message.result) : null,
+    };
+    if (!message.result && message.type === 'request') {
+      item.receive = messages.find((m) => m.type === 'response' && m.reqId === message.reqId && m.result)?.result;
+    }
+    result.push(item);
+    return result;
+  }, []);
 };
 
 const parseJSON = (json) => {

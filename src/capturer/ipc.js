@@ -20,21 +20,33 @@ const startCapturingIpc = () => {
         time: new Date().toLocaleString().split(' ')[1],
       };
       const [firstArg, ...restArgs] = args;
+      const reg = /^[0-9][\s\S]+/;
 
       if (args.length === 1 && firstArg.methodName) {
         message = {
           ...message,
           channel,
+          type: 'request',
+          reqId: firstArg.reqId,
           method: firstArg.methodName,
           args: firstArg.methodArgs,
           result: ret,
         };
-      } else if (typeof firstArg === 'string') {
+      } else if (args.length === 1 && firstArg.cbArgs) {
         message = {
           ...message,
           channel,
-          method: firstArg,
-          args: restArgs || [],
+          type: 'response',
+          reqId: firstArg.reqId,
+          result: firstArg.cbArgs[0],
+        };
+      } else if (typeof firstArg === 'string') {
+        const isMethod = !reg.test(firstArg);
+        message = {
+          ...message,
+          channel,
+          method: isMethod ? firstArg : '',
+          args: isMethod ? restArgs : args,
           result: ret,
         };
       } else {
@@ -75,13 +87,16 @@ const startCapturingIpc = () => {
       handleMessage(channel, data);
       return ret;
     };
+
+    ipcRenderer.on('protoAsyncCallback', (ev, args) => {
+      handleMessage('protoAsyncCallback', [args]);
+    });
   });
 };
 
 const stopCapturingIpc = () => {
   return evalInWindow(() => {
     window.__WFC__.IPCMessages = undefined;
-    window.__WFC__.captureIPC = undefined;
   });
 };
 
@@ -93,15 +108,9 @@ const clearIpcMessages = () => {
 
 const getIpcMessages = () => {
   return evalInWindow(() => {
-    const messages = window.__WFC__.IPCMessages;
-    // clear messages after getting them each time
-    // if (messages) window.__WFC__.IPCMessages = [];
-    return messages;
+    return window.__WFC__.IPCMessages;
   }).then((messages) => {
     if (messages) return messages;
-
-    // Start listening for messages if array is missing meaning
-    // the window was reloaded
     return startCapturingIpc().then(() => []);
   });
 };
